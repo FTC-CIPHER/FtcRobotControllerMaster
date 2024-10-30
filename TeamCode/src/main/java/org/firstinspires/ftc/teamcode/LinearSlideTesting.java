@@ -92,6 +92,10 @@ public class LinearSlideTesting extends LinearOpMode {
     private final DcMotor driveMotorBackRight;
     private final IMU imu;
 
+    volatile boolean transitCompleted;
+
+
+    Thread transitThread;
     public LinearSlideTesting() {
         LinearSlideBackLeft = hardwareMap.get(Servo.class, "HiTechl");
         LinearSlideBackRight = hardwareMap.get(Servo.class, "HiTechr");
@@ -110,9 +114,7 @@ public class LinearSlideTesting extends LinearOpMode {
         driveMotorBackRight = hardwareMap.get(DcMotor.class, "rightBack");
         imu = hardwareMap.get(IMU.class, "imu");
 
-
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
-
 
         imu.initialize(parameters);
         imu.resetYaw();
@@ -287,37 +289,23 @@ public class LinearSlideTesting extends LinearOpMode {
                 }
                 break;
             case TRANSIT:
-
-                TransitTime += 50;
-                if (TransitTime == 1000) {
-                    BackClawCycle = 1;
-                    FrontClawRollPosition = 0.835;
+                if (transitThread == null) {
+                    transitThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                transit();
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                // TODO: RESET claw states
+                                transitCompleted = true;
+                            }
+                        }
+                    });
+                    transitThread.start();
                 }
-                if (TransitTime == 3000) {
-                    MisumiRightCurrentPosition = 0.33;
-                    MisumiLeftCurrentPosition = 0.67;
-                }
-                if (TransitTime == 5000) {
-                    MisumiLeftCurrentPosition = 0.0355;
-                    MisumiRightCurrentPosition = 0.9645;
-                    FrontClawRollPosition = 0.5;
-                }
-                if (TransitTime == 7000) {
-                    LinearSlideBackLeftCurrentPosition = 0.5193;
-                    LinearSlideBackRightCurrentPostion = 0.4881;
-                }
-                if (TransitTime == 9000) {
-                    ViperSlideLeftCurrentPosition = 0.8699;
-                    ViperSlideRightCurrentPosition = 0.1301;
-                }
-                if (TransitTime == 11000) {
-                    BackClawCycle = 3;
-                }
-                if (TransitTime == 13000) {
-                    FrontClawCycle = 1;
-                }
-                if (TransitTime == 14500) {
-                    OuttakeMode();
+                if (transitCompleted) {
+                    transitThread = null;
                 }
 
                 break;
@@ -455,6 +443,50 @@ public class LinearSlideTesting extends LinearOpMode {
 
 
     }
+    void transit() throws InterruptedException {
+        transitCompleted = false;
+        // do something
+        Thread.sleep(1000);
+        // do something
+        Thread.sleep(1000);
+        // TODO: add the actual operations here
+//        TransitTime += 50;
+//        if (TransitTime == 1000) {
+//            BackClawCycle = 1;
+//            FrontClawRollPosition = 0.835;
+//        }
+//        if (TransitTime == 3000) {
+//            MisumiRightCurrentPosition = 0.33;
+//            MisumiLeftCurrentPosition = 0.67;
+//        }
+//        if (TransitTime == 5000) {
+//            MisumiLeftCurrentPosition = 0.0355;
+//            MisumiRightCurrentPosition = 0.9645;
+//            FrontClawRollPosition = 0.5;
+//        }
+//        if (TransitTime == 7000) {
+//            LinearSlideBackLeftCurrentPosition = 0.5193;
+//            LinearSlideBackRightCurrentPostion = 0.4881;
+//        }
+//        if (TransitTime == 9000) {
+//            ViperSlideLeftCurrentPosition = 0.8699;
+//            ViperSlideRightCurrentPosition = 0.1301;
+//        }
+//        if (TransitTime == 11000) {
+//            BackClawCycle = 3;
+//        }
+//        if (TransitTime == 13000) {
+//            FrontClawCycle = 1;
+//        }
+//        if (TransitTime == 14500) {
+//            OuttakeMode();
+//        }
+
+
+        transitCompleted = true;
+
+    }
+
 }
 
 
