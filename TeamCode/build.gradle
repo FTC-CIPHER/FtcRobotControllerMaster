@@ -52,4 +52,7 @@ dependencies {
     implementation 'org.team11260:fast-load:0.1.2'
     //implementation 'com.fasterxml/jackson.core:jacson-databind:2.12.7'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
+    testImplementation 'junit:junit:4.13.2'
+    // Lei: I could not make JUnit5 to work
+    // testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 }
