@@ -29,6 +29,9 @@ public class LinearSlideTesting extends LinearOpMode {
         // TODO: use two gamepad keys to increase/decrease speedCoefficient?
         public static double speedCoefficient = 0.5;
 
+        // The global coefficient for claw transit mode speed.
+        public static double clawTransitSpeedFactor = 1;
+
     }
 
     enum ClawMode {
@@ -66,10 +69,10 @@ public class LinearSlideTesting extends LinearOpMode {
     double MisumiRightCurrentPosition = 0;
     int SlideLeftCurrentPosition = 0;
     int SlideRightCurrentPosition = 0;
-    double FrontClawRollPosition = 0.5;
-    int FrontClawCycle = 1;
-    int BackClawCycle = 1;
-    boolean HorizontalSlideControl = false;
+    volatile double FrontClawRollPosition = 0.5;
+    volatile int FrontClawCycle = 1;
+    volatile int BackClawCycle = 1;
+    volatile boolean HorizontalSlideControl = false;
     boolean OverrideMode = false;
     boolean Gamepad2DpadUp = false;
     boolean Gamepad2Cross = false;
@@ -96,6 +99,7 @@ public class LinearSlideTesting extends LinearOpMode {
 
 
     Thread transitThread;
+
     public LinearSlideTesting() {
         LinearSlideBackLeft = hardwareMap.get(Servo.class, "HiTechl");
         LinearSlideBackRight = hardwareMap.get(Servo.class, "HiTechr");
@@ -133,7 +137,7 @@ public class LinearSlideTesting extends LinearOpMode {
      * is stopped.
      */
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         waitForStart();
         while (opModeIsActive()) {
 
@@ -144,6 +148,7 @@ public class LinearSlideTesting extends LinearOpMode {
             UpdateComponentStates();
 
             LogTelemetryData();
+            Thread.sleep(1);  // call sleep to reduce CPU load.
         }
     }
 
@@ -305,9 +310,11 @@ public class LinearSlideTesting extends LinearOpMode {
                     transitThread.start();
                 }
                 if (transitCompleted) {
+                    // The thread shall be completed and in terminated state at this point
+                    // If we made any mistake in the code and the thread is actually still running,
+                    // consider interrupting it before removing the reference to it.
                     transitThread = null;
                 }
-
                 break;
             case OUTTAKE:
                 OuttakeTime += 50;
@@ -424,8 +431,6 @@ public class LinearSlideTesting extends LinearOpMode {
         FrontClawCycle = 3;
         BackClawCycle = 2;
         TransitTime = 0;
-
-
     }
 
     public void OuttakeMode() {
@@ -440,49 +445,37 @@ public class LinearSlideTesting extends LinearOpMode {
         WaitForBackClawDrop = 0;
         WaitForBackClawReturn = 0;
         OuttakeTime = 0;
-
-
     }
+
     void transit() throws InterruptedException {
         transitCompleted = false;
-        // do something
-        Thread.sleep(1000);
-        // do something
-        Thread.sleep(1000);
-        // TODO: add the actual operations here
-//        TransitTime += 50;
-//        if (TransitTime == 1000) {
-//            BackClawCycle = 1;
-//            FrontClawRollPosition = 0.835;
-//        }
-//        if (TransitTime == 3000) {
-//            MisumiRightCurrentPosition = 0.33;
-//            MisumiLeftCurrentPosition = 0.67;
-//        }
-//        if (TransitTime == 5000) {
-//            MisumiLeftCurrentPosition = 0.0355;
-//            MisumiRightCurrentPosition = 0.9645;
-//            FrontClawRollPosition = 0.5;
-//        }
-//        if (TransitTime == 7000) {
-//            LinearSlideBackLeftCurrentPosition = 0.5193;
-//            LinearSlideBackRightCurrentPostion = 0.4881;
-//        }
-//        if (TransitTime == 9000) {
-//            ViperSlideLeftCurrentPosition = 0.8699;
-//            ViperSlideRightCurrentPosition = 0.1301;
-//        }
-//        if (TransitTime == 11000) {
-//            BackClawCycle = 3;
-//        }
-//        if (TransitTime == 13000) {
-//            FrontClawCycle = 1;
-//        }
-//        if (TransitTime == 14500) {
-//            OuttakeMode();
-//        }
+        Thread.sleep((long) (1000 * Properties.clawTransitSpeedFactor));
+        BackClawCycle = 1;
+        FrontClawRollPosition = 0.835;
 
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
 
+        MisumiRightCurrentPosition = 0.33;
+        MisumiLeftCurrentPosition = 0.67;
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
+
+        MisumiLeftCurrentPosition = 0.0355;
+        MisumiRightCurrentPosition = 0.9645;
+        FrontClawRollPosition = 0.5;
+
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
+        LinearSlideBackLeftCurrentPosition = 0.5193;
+        LinearSlideBackRightCurrentPostion = 0.4881;
+
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
+        ViperSlideLeftCurrentPosition = 0.8699;
+        ViperSlideRightCurrentPosition = 0.1301;
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
+        BackClawCycle = 3;
+        Thread.sleep((long) (2000 * Properties.clawTransitSpeedFactor));
+        FrontClawCycle = 1;
+        Thread.sleep((long) (1500 * Properties.clawTransitSpeedFactor));
+        OuttakeMode();
         transitCompleted = true;
 
     }
