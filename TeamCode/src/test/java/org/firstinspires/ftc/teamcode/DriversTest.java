@@ -166,5 +166,4 @@ public class DriversTest extends TestCase {
         assertEquals(-0.5, drivers.properties.leftBackPower, TOLERANCE);
         assertEquals(0.5, drivers.properties.rightBackPower, TOLERANCE);
     }
-
 }
