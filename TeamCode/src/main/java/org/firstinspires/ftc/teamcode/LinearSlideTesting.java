@@ -30,7 +30,7 @@ public class LinearSlideTesting extends LinearOpMode {
         public static double speedCoefficient = 0.5;
 
         // The global coefficient for claw transit mode speed.
-        public static double clawTransitSpeedFactor = 1;
+        public static double clawTransitSpeedFactor = 1.0;
 
     }
 
@@ -118,7 +118,9 @@ public class LinearSlideTesting extends LinearOpMode {
         driveMotorBackRight = hardwareMap.get(DcMotor.class, "rightBack");
         imu = hardwareMap.get(IMU.class, "imu");
 
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+        IMU.Parameters parameters = new IMU.Parameters(
+                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                                             RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
 
         imu.initialize(parameters);
         imu.resetYaw();
@@ -241,8 +243,10 @@ public class LinearSlideTesting extends LinearOpMode {
         FrontClawRollPosition = Math.max(Math.min(FrontClawRollPosition, 1), 0);
         MisumiLeftCurrentPosition = Math.max(Math.min(MisumiLeftCurrentPosition, 1), 0);
         MisumiRightCurrentPosition = Math.max(Math.min(MisumiRightCurrentPosition, 1), 0);
-        LinearSlideBackLeftCurrentPosition = Math.max(Math.min(LinearSlideBackLeftCurrentPosition, 0.5455), 0.5135);
-        LinearSlideBackRightCurrentPostion = Math.max(Math.min(LinearSlideBackRightCurrentPostion, 0.4928), 0.4628);
+        LinearSlideBackLeftCurrentPosition = Math.max(
+                Math.min(LinearSlideBackLeftCurrentPosition, 0.5455), 0.5135);
+        LinearSlideBackRightCurrentPostion = Math.max(
+                Math.min(LinearSlideBackRightCurrentPostion, 0.4928), 0.4628);
 
 
         if (gamepad2.dpad_up) {
@@ -394,7 +398,9 @@ public class LinearSlideTesting extends LinearOpMode {
         RightBackDrivePower = (MecanumPower * MecanumCos / MecanumMax - GamepadRightX) * Properties.speedCoefficient;
 
 
-        double maxPower = Math.max(Math.max(Math.abs(LeftFrontDrivePower), Math.abs(RightFrontDrivePower)), Math.max(Math.abs(LeftBackDrivePower), Math.abs(RightBackDrivePower)));
+        double maxPower = Math.max(
+                Math.max(Math.abs(LeftFrontDrivePower), Math.abs(RightFrontDrivePower)),
+                Math.max(Math.abs(LeftBackDrivePower), Math.abs(RightBackDrivePower)));
         if (maxPower > 1) {
             // Normalize the motor power values
             LeftFrontDrivePower /= maxPower;
