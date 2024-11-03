@@ -71,7 +71,6 @@ public class LinearSlideTesting extends LinearOpMode {
     private Servo BackClawGrab;
     private DcMotorEx SlideMotorl;
     private DcMotorEx SlideMotorr;
-    private IMU imu;
 
     volatile boolean transitCompleted;
 
@@ -81,7 +80,6 @@ public class LinearSlideTesting extends LinearOpMode {
 
     public LinearSlideTesting() {
 
-        setupImu();
         setupDrivers();
 
         LinearSlideBackLeft = hardwareMap.get(Servo.class, "HiTechl");
@@ -103,16 +101,14 @@ public class LinearSlideTesting extends LinearOpMode {
 
     }
 
-    private void setupImu() {
-        imu = hardwareMap.get(IMU.class, "imu");
+    private void setupDrivers() {
+        IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                                              RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         imu.resetYaw();
-    }
 
-    private void setupDrivers() {
         DcMotor driveMotorFrontLeft = hardwareMap.get(DcMotor.class, "leftFront");
         DcMotor driveMotorFrontRight = hardwareMap.get(DcMotor.class, "rightFront");
         DcMotor driveMotorBackLeft = hardwareMap.get(DcMotor.class, "leftBack");
@@ -145,6 +141,7 @@ public class LinearSlideTesting extends LinearOpMode {
             UpdateComponentStates();
             LogTelemetryData();
 
+            // TODO: any event we can listen to to avoid a while loop and busy waiting?
             Thread.sleep(1);  // call sleep to reduce CPU load.
         }
     }
@@ -270,9 +267,7 @@ public class LinearSlideTesting extends LinearOpMode {
         if (gamepad2.circle) {
             OuttakeMode();
         }
-        if (gamepad1.circle) {
-            imu.resetYaw();
-        }
+
         switch (currentClawMode) {
             case GRAB:
                 if (gamepad2.cross) {

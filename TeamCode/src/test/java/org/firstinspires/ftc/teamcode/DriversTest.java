@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -135,4 +136,35 @@ public class DriversTest extends TestCase {
         verify(mockDriverBackLeft).setPower(drivers.properties.leftBackPower);
         verify(mockDriverBackRight).setPower(drivers.properties.rightBackPower);
     }
+
+    @Test
+    public void test_reset_imu() {
+        gamepad.left_stick_x = 1.0f;
+        gamepad.left_stick_y = 0.0f;
+        gamepad.right_stick_x = 0.0f;
+        YawPitchRollAngles yawPitchRollAngles = new YawPitchRollAngles(AngleUnit.DEGREES, 90, 0.0,
+                                                                       0.0, 0L);
+        when(mockImu.getRobotYawPitchRollAngles()).thenReturn(yawPitchRollAngles);
+
+        drivers.update();
+
+        assertEquals(-0.5, drivers.properties.leftFrontPower, TOLERANCE);
+        assertEquals(-0.5, drivers.properties.rightFrontPower, TOLERANCE);
+        assertEquals(-0.5, drivers.properties.leftBackPower, TOLERANCE);
+        assertEquals(-0.5, drivers.properties.rightBackPower, TOLERANCE);
+
+        gamepad.circle = true;
+
+        yawPitchRollAngles = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, 0.0, 0.0, 0L);
+        when(mockImu.getRobotYawPitchRollAngles()).thenReturn(yawPitchRollAngles);
+
+        drivers.update();
+
+        verify(mockImu, times(1)).resetYaw();
+        assertEquals(0.5, drivers.properties.leftFrontPower, TOLERANCE);
+        assertEquals(-0.5, drivers.properties.rightFrontPower, TOLERANCE);
+        assertEquals(-0.5, drivers.properties.leftBackPower, TOLERANCE);
+        assertEquals(0.5, drivers.properties.rightBackPower, TOLERANCE);
+    }
+
 }

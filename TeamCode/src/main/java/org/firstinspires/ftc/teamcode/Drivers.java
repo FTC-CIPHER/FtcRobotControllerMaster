@@ -54,6 +54,9 @@ public class Drivers {
     public void update() {
         telemetry.addData("Step: ", "Updating drivers.");
 
+        if (gamepad.circle) {
+            imu.resetYaw();
+        }
         CalculateDriverProperties();
         UpdateDriverStates();
 
