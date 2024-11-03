@@ -155,7 +155,12 @@ public class LinearSlideTesting extends LinearOpMode {
     }
 
     private void UpdateComponentStates() {
-        FrontClawRoll.setPosition(FrontClawRollPosition);
+        if (FrontClawRoll.getPosition() != FrontClawRollPosition) {
+            FrontClawRoll.setPosition(FrontClawRollPosition);
+        }
+        // TODO: Check position is diff first before setPosition, similar to above.
+        //       Depending on the actual implementation of setPosition, this could
+        //       result in great performance improvements.
         LinearSlideBackRight.setPosition(LinearSlideBackRightCurrentPostion);
         LinearSlideBackLeft.setPosition(LinearSlideBackLeftCurrentPosition);
         SlideMotorl.setTargetPosition(SlideLeftCurrentPosition);
