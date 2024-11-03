@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 // TODO:
-// 1. extrat all controllable variables into a class
+// 1. extract all controllable variables into a class
 // 2. use a clock to time operations instead of fixed number of iterations
 // 3. fix servo stuck issue
 // 4. add unit tests
@@ -23,8 +23,8 @@ public class LinearSlideTesting extends LinearOpMode {
         // The global coefficient for motor speed.
         // Modify this value will change the speed of all motors in the robot.
         // TODO: use two gamepad keys to increase/decrease speedCoefficient?
-        public static double normalSpeedCoefficient = 0.5;
-        public static double turboSpeedCoefficient = 1.0;
+        public static double normalDriversSpeedCoefficient = 0.5;
+        public static double turboDriversSpeedCoefficient = 1.0;
 
         // The global coefficient for claw transit mode speed.
         public static double clawTransitSpeedFactor = 1.0;
@@ -123,8 +123,8 @@ public class LinearSlideTesting extends LinearOpMode {
 
         drivers = new Drivers(driveMotorFrontLeft, driveMotorFrontRight, driveMotorBackLeft,
                               driveMotorBackRight, gamepad1, imu, telemetry);
-        drivers.setSpeedCoefficients(Properties.normalSpeedCoefficient,
-                                     Properties.turboSpeedCoefficient);
+        drivers.setSpeedCoefficients(Properties.normalDriversSpeedCoefficient,
+                                     Properties.turboDriversSpeedCoefficient);
     }
 
     /**
