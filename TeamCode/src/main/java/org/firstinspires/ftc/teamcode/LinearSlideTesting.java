@@ -327,7 +327,9 @@ public class LinearSlideTesting extends LinearOpMode {
                 }
                 if (gamepad2.cross) {
                     if (!Gamepad2Cross) {
-                        BackClawCycle += 1;
+                        synchronized (this) {
+                            BackClawCycle += 1;
+                        }
                     }
                     Gamepad2Cross = true;
                 } else {
