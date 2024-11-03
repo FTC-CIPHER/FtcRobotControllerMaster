@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public class Drivers {
+class Drivers {
     static class Properties {
         public double leftFrontPower = 0;
         public double rightFrontPower = 0;
@@ -63,7 +63,7 @@ public class Drivers {
         telemetry.addData("Step: ", "Complete updating drivers.");
     }
 
-    void CalculateDriverProperties() {
+    private void CalculateDriverProperties() {
         // Turbo mode if left trigger is pressed
         double speedCoefficient =
                 gamepad.left_trigger >= left_trigger_threshold ? turboSpeedCoefficient :
@@ -121,7 +121,7 @@ public class Drivers {
 
     }
 
-    protected void UpdateDriverStates() {
+    private void UpdateDriverStates() {
         driverFrontLeft.setPower(properties.leftFrontPower);
         driverFrontRight.setPower(properties.rightFrontPower);
         driverBackLeft.setPower(properties.leftBackPower);
