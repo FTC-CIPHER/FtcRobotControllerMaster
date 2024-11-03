@@ -248,10 +248,10 @@ public class LinearSlideTesting extends LinearOpMode {
         FrontClawRollPosition = Math.max(Math.min(FrontClawRollPosition, 1), 0);
         MisumiLeftCurrentPosition = Math.max(Math.min(MisumiLeftCurrentPosition, 1), 0);
         MisumiRightCurrentPosition = Math.max(Math.min(MisumiRightCurrentPosition, 1), 0);
-        LinearSlideBackLeftCurrentPosition = Math.max(
-                Math.min(LinearSlideBackLeftCurrentPosition, 0.5455), 0.5135);
-        LinearSlideBackRightCurrentPostion = Math.max(
-                Math.min(LinearSlideBackRightCurrentPostion, 0.4928), 0.4628);
+        LinearSlideBackLeftCurrentPosition =
+                Math.max(Math.min(LinearSlideBackLeftCurrentPosition, 0.5455), 0.5135);
+        LinearSlideBackRightCurrentPostion =
+                Math.max(Math.min(LinearSlideBackRightCurrentPostion, 0.4928), 0.4628);
 
 
         if (gamepad2.dpad_up) {
@@ -385,6 +385,13 @@ public class LinearSlideTesting extends LinearOpMode {
         GamepadRightY = gamepad1.right_stick_y;
         GamepadRightX = gamepad1.right_stick_x;
 
+        // Turbo mode
+        if (gamepad1.left_trigger == 1) {
+            Properties.speedCoefficient = 1.0;
+        } else {
+            Properties.speedCoefficient = 0.5;
+        }
+
         GyroYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         GyroYawDisplay = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
@@ -397,28 +404,24 @@ public class LinearSlideTesting extends LinearOpMode {
         MecanumMax = Math.max(Math.abs(MecanumSin), Math.abs(MecanumCos));
 
 
-        LeftFrontDrivePower = (MecanumPower * MecanumCos / MecanumMax + GamepadRightX) * Properties.speedCoefficient;
-        RightFrontDrivePower = (MecanumPower * MecanumSin / MecanumMax - GamepadRightX) * Properties.speedCoefficient;
-        LeftBackDrivePower = (MecanumPower * MecanumSin / MecanumMax + GamepadRightX) * Properties.speedCoefficient;
-        RightBackDrivePower = (MecanumPower * MecanumCos / MecanumMax - GamepadRightX) * Properties.speedCoefficient;
+        LeftFrontDrivePower = (MecanumPower * MecanumCos / MecanumMax + GamepadRightX) *
+                Properties.speedCoefficient;
+        RightFrontDrivePower = (MecanumPower * MecanumSin / MecanumMax - GamepadRightX) *
+                Properties.speedCoefficient;
+        LeftBackDrivePower = (MecanumPower * MecanumSin / MecanumMax + GamepadRightX) *
+                Properties.speedCoefficient;
+        RightBackDrivePower = (MecanumPower * MecanumCos / MecanumMax - GamepadRightX) *
+                Properties.speedCoefficient;
 
-
-        double maxPower = Math.max(
-                Math.max(Math.abs(LeftFrontDrivePower), Math.abs(RightFrontDrivePower)),
-                Math.max(Math.abs(LeftBackDrivePower), Math.abs(RightBackDrivePower)));
+        double maxPower =
+                Math.max(Math.max(Math.abs(LeftFrontDrivePower), Math.abs(RightFrontDrivePower)),
+                         Math.max(Math.abs(LeftBackDrivePower), Math.abs(RightBackDrivePower)));
         if (maxPower > 1) {
             // Normalize the motor power values
             LeftFrontDrivePower /= maxPower;
             RightFrontDrivePower /= maxPower;
             LeftBackDrivePower /= maxPower;
             RightBackDrivePower /= maxPower;
-        }
-
-        // TODO: what is this for? Turbo mode?
-        if (gamepad1.left_trigger == 1) {
-            Properties.speedCoefficient = 1.0;
-        } else {
-            Properties.speedCoefficient = 0.5;
         }
     }
 
