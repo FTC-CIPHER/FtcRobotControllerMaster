@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,9 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 // TODO:
 // 1. extrat all controllable variables into a class
@@ -27,7 +23,8 @@ public class LinearSlideTesting extends LinearOpMode {
         // The global coefficient for motor speed.
         // Modify this value will change the speed of all motors in the robot.
         // TODO: use two gamepad keys to increase/decrease speedCoefficient?
-        public static double speedCoefficient = 0.5;
+        public static double normalSpeedCoefficient = 0.5;
+        public static double turboSpeedCoefficient = 1.0;
 
         // The global coefficient for claw transit mode speed.
         public static double clawTransitSpeedFactor = 1.0;
@@ -38,17 +35,6 @@ public class LinearSlideTesting extends LinearOpMode {
         NONE, GRAB, TRANSIT, OUTTAKE
     }
 
-    double GyroYawDisplay;
-    double GyroYaw;
-    double MecanumTheta;
-    double MecanumPower;
-    double MecanumSin;
-    double MecanumCos;
-    double MecanumMax;
-    double LeftFrontDrivePower;
-    double RightFrontDrivePower;
-    double LeftBackDrivePower;
-    double RightBackDrivePower;
     double TransitTime;
     double OuttakeTime;
     double WaitForBackClawDrop;
@@ -56,10 +42,6 @@ public class LinearSlideTesting extends LinearOpMode {
     double WaitForBackClawFront;
     double Gamepad2LeftY;
     double Gamepad2RightY;
-    double GamepadRightY;
-    double GamepadLeftY;
-    double GamepadLeftX;
-    double GamepadRightX;
     double Gamepad2RightX;
     double LinearSlideBackLeftCurrentPosition = 0.5135;
     double LinearSlideBackRightCurrentPostion = 0.4928;
@@ -78,29 +60,30 @@ public class LinearSlideTesting extends LinearOpMode {
     boolean Gamepad2Cross = false;
     boolean Gamepad2Square = false;
     ClawMode currentClawMode = ClawMode.NONE;
-    private final Servo LinearSlideBackLeft;
-    private final Servo LinearSlideBackRight;
-    private final Servo viperSlideLeft;
-    private final Servo viperSlideRight;
-    private final Servo Misumil;
-    private final Servo Misumir;
-    private final Servo FrontClawGrab;
-    private final Servo FrontClawRoll;
-    private final Servo BackClawGrab;
-    private final DcMotorEx SlideMotorl;
-    private final DcMotorEx SlideMotorr;
-    private final DcMotor driveMotorFrontLeft;
-    private final DcMotor driveMotorFrontRight;
-    private final DcMotor driveMotorBackLeft;
-    private final DcMotor driveMotorBackRight;
-    private final IMU imu;
+    private Servo LinearSlideBackLeft;
+    private Servo LinearSlideBackRight;
+    private Servo viperSlideLeft;
+    private Servo viperSlideRight;
+    private Servo Misumil;
+    private Servo Misumir;
+    private Servo FrontClawGrab;
+    private Servo FrontClawRoll;
+    private Servo BackClawGrab;
+    private DcMotorEx SlideMotorl;
+    private DcMotorEx SlideMotorr;
+    private IMU imu;
 
     volatile boolean transitCompleted;
 
+    private Drivers drivers;
 
     Thread transitThread;
 
     public LinearSlideTesting() {
+
+        setupImu();
+        setupDrivers();
+
         LinearSlideBackLeft = hardwareMap.get(Servo.class, "HiTechl");
         LinearSlideBackRight = hardwareMap.get(Servo.class, "HiTechr");
         viperSlideLeft = hardwareMap.get(Servo.class, "ViperSlidel");
@@ -112,25 +95,36 @@ public class LinearSlideTesting extends LinearOpMode {
         FrontClawGrab = hardwareMap.get(Servo.class, "FrontClawGrab");
         FrontClawRoll = hardwareMap.get(Servo.class, "ClawRoll");
         BackClawGrab = hardwareMap.get(Servo.class, "BackClawGrab");
-        driveMotorFrontLeft = hardwareMap.get(DcMotor.class, "leftFront");
-        driveMotorFrontRight = hardwareMap.get(DcMotor.class, "rightFront");
-        driveMotorBackLeft = hardwareMap.get(DcMotor.class, "leftBack");
-        driveMotorBackRight = hardwareMap.get(DcMotor.class, "rightBack");
-        imu = hardwareMap.get(IMU.class, "imu");
-
-        IMU.Parameters parameters = new IMU.Parameters(
-                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                                             RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
-
-        imu.initialize(parameters);
-        imu.resetYaw();
-        driveMotorBackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        driveMotorFrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         SlideMotorl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         SlideMotorl.setMode((DcMotor.RunMode.RUN_USING_ENCODER));
         SlideMotorl.setDirection(DcMotorSimple.Direction.REVERSE);
         SlideMotorr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         SlideMotorr.setMode((DcMotor.RunMode.RUN_USING_ENCODER));
+
+    }
+
+    private void setupImu() {
+        imu = hardwareMap.get(IMU.class, "imu");
+        IMU.Parameters parameters = new IMU.Parameters(
+                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                                             RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+        imu.initialize(parameters);
+        imu.resetYaw();
+    }
+
+    private void setupDrivers() {
+        DcMotor driveMotorFrontLeft = hardwareMap.get(DcMotor.class, "leftFront");
+        DcMotor driveMotorFrontRight = hardwareMap.get(DcMotor.class, "rightFront");
+        DcMotor driveMotorBackLeft = hardwareMap.get(DcMotor.class, "leftBack");
+        DcMotor driveMotorBackRight = hardwareMap.get(DcMotor.class, "rightBack");
+
+        driveMotorBackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        driveMotorFrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        drivers = new Drivers(driveMotorFrontLeft, driveMotorFrontRight, driveMotorBackLeft,
+                              driveMotorBackRight, gamepad1, imu, telemetry);
+        drivers.setSpeedCoefficients(Properties.normalSpeedCoefficient,
+                                     Properties.turboSpeedCoefficient);
     }
 
     /**
@@ -143,13 +137,14 @@ public class LinearSlideTesting extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
 
-            CalculateMotorValues();
+            drivers.update();
+
+            // Update and log claw states
+            // TODO: extract claw to a separate class similar to drivers.
             CalculateClawValues();
-
-            // TODO: can we calculate and update motor and claw states separately?
             UpdateComponentStates();
-
             LogTelemetryData();
+
             Thread.sleep(1);  // call sleep to reduce CPU load.
         }
     }
@@ -173,23 +168,10 @@ public class LinearSlideTesting extends LinearOpMode {
         SlideMotorr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         SlideMotorl.setPower(1);
         SlideMotorr.setPower(1);
-
-
-        driveMotorFrontLeft.setPower(LeftFrontDrivePower);
-        driveMotorFrontRight.setPower(RightFrontDrivePower);
-        driveMotorBackLeft.setPower(LeftBackDrivePower);
-        driveMotorBackRight.setPower(RightBackDrivePower);
     }
 
     private void LogTelemetryData() {
         telemetry.addData("Current Mode", currentClawMode);
-        telemetry.addData("IMU", GyroYawDisplay);
-        telemetry.addData("Speed Coefficient", Properties.speedCoefficient);
-        telemetry.addData("LeftFrontPower", LeftFrontDrivePower);
-        telemetry.addData("RightFrontPower", RightFrontDrivePower);
-        telemetry.addData("LeftBackPower", LeftBackDrivePower);
-        telemetry.addData("RightBackPower", RightBackDrivePower);
-        telemetry.addData("theta", MecanumTheta);
         telemetry.addData("HSlideLeft", LinearSlideBackLeft.getPosition());
         telemetry.addData("HSlideRight", LinearSlideBackRight.getPosition());
         telemetry.addData("VSlideLeft", SlideLeftCurrentPosition);
@@ -375,56 +357,6 @@ public class LinearSlideTesting extends LinearOpMode {
             SlideRightCurrentPosition = Math.max(Math.min(SlideRightCurrentPosition, 2800), 0);
         }
     }
-
-    /**
-     * Set the motion of the robot based on the joystick on gamepad 1
-     */
-    private void CalculateMotorValues() {
-        GamepadLeftY = gamepad1.left_stick_y;
-        GamepadLeftX = gamepad1.left_stick_x;
-        GamepadRightY = gamepad1.right_stick_y;
-        GamepadRightX = gamepad1.right_stick_x;
-
-        // Turbo mode
-        if (gamepad1.left_trigger == 1) {
-            Properties.speedCoefficient = 1.0;
-        } else {
-            Properties.speedCoefficient = 0.5;
-        }
-
-        GyroYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-        GyroYawDisplay = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-
-
-        MecanumTheta = Math.atan2(-GamepadLeftY, GamepadLeftX);
-        MecanumTheta -= GyroYaw;
-        MecanumPower = Math.hypot(-GamepadLeftY, GamepadLeftX);
-        MecanumSin = Math.sin(MecanumTheta - Math.PI / 4);
-        MecanumCos = Math.cos(MecanumTheta - Math.PI / 4);
-        MecanumMax = Math.max(Math.abs(MecanumSin), Math.abs(MecanumCos));
-
-
-        LeftFrontDrivePower = (MecanumPower * MecanumCos / MecanumMax + GamepadRightX) *
-                Properties.speedCoefficient;
-        RightFrontDrivePower = (MecanumPower * MecanumSin / MecanumMax - GamepadRightX) *
-                Properties.speedCoefficient;
-        LeftBackDrivePower = (MecanumPower * MecanumSin / MecanumMax + GamepadRightX) *
-                Properties.speedCoefficient;
-        RightBackDrivePower = (MecanumPower * MecanumCos / MecanumMax - GamepadRightX) *
-                Properties.speedCoefficient;
-
-        double maxPower =
-                Math.max(Math.max(Math.abs(LeftFrontDrivePower), Math.abs(RightFrontDrivePower)),
-                         Math.max(Math.abs(LeftBackDrivePower), Math.abs(RightBackDrivePower)));
-        if (maxPower > 1) {
-            // Normalize the motor power values
-            LeftFrontDrivePower /= maxPower;
-            RightFrontDrivePower /= maxPower;
-            LeftBackDrivePower /= maxPower;
-            RightBackDrivePower /= maxPower;
-        }
-    }
-
 
     public void GrabMode() {
         currentClawMode = ClawMode.GRAB;
