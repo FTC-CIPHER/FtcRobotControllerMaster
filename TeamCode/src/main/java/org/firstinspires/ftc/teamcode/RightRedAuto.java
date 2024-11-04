@@ -40,8 +40,8 @@ public class RightRedAuto extends LinearOpMode {
             private boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket packet){
-                HiTechl.setPosition(0.5193);
-                HiTechr.setPosition(0.4881);
+                HiTechl.setPosition(0.5199);
+                HiTechr.setPosition(0.4864);
                 //sleep(2000);
                 int delay = 2000; // number of milliseconds to sleep
                 long start = System.currentTimeMillis();
@@ -331,8 +331,11 @@ public class RightRedAuto extends LinearOpMode {
                 .strafeToConstantHeading(new Vector2d(45, -52))
                 //.lineToX(49)
                 .build();
-        Action forward = tab3.fresh()
-                .strafeToConstantHeading(new Vector2d(12, -40))
+        Action push1 = tab3.fresh()
+                .strafeTo(new Vector2d(36, -60))
+                .strafeTo(new Vector2d(36, -10))
+                .strafeTo(new Vector2d(50, -10))
+                .strafeTo(new Vector2d(50, -55))
                 //.lineToY(-40)
                 .build();
         waitForStart();
@@ -343,31 +346,32 @@ public class RightRedAuto extends LinearOpMode {
         if (isStopRequested()) return;
         Actions.runBlocking(
                 new SequentialAction(
-                        forward,
-                        FrontClawGrab.FrontClawClose(),
-                        BackClawGrab.RearClawOpen(),
-                        FrontClawGrab.FrontClawClose(),
-                        horizontalSlides.TransferHorizontal(),
-                        backRotate.BackRotateTransfer(),
-                        frontRotate.FrontRotateTransfer(),
+                        push1,
+                        backRotate.ToDrop(),
+                        //FrontClawGrab.FrontClawClose(),
+                        //BackClawGrab.RearClawOpen(),
+                        //FrontClawGrab.FrontClawClose(),
+                        //horizontalSlides.TransferHorizontal(),
+                        //backRotate.BackRotateTransfer(),
+                        //frontRotate.FrontRotateTransfer(),
                         //.wait(2),
                         //TimeUnit.SECONDS.sleep(2.0),
-                        BackClawGrab.RearClawClose(),
+                        BackClawGrab.RearClawClose()
                         //TimeUnit.SECONDS.sleep(0.5),
-                        FrontClawGrab.FrontClawOpen(),
+                        //FrontClawGrab.FrontClawOpen(),
                         //TimeUnit.SECONDS.sleep(0.5),
-                        backRotate.Vertical(),
-                        BackClawGrab.RearClawClose(),
-                        leftToNet,
-                        lift.LiftUp(),
-                        backRotate.ToDrop(),
+                        //backRotate.Vertical(),
+                        //BackClawGrab.RearClawClose(),
+                        //leftToNet,
+                        //lift.LiftUp(),
+                        //backRotate.ToDrop(),
                         //TimeUnit.SECONDS.sleep(0.5),
-                        BackClawGrab.RearClawOpen(),
+                        //BackClawGrab.RearClawOpen(),
                         //TimeUnit.SECONDS.sleep(0.5),
-                        backRotate.Vertical(),
+                        //backRotate.Vertical(),
                         //TimeUnit.SECONDS.sleep(0.5),
-                        lift.LiftDown(),
-                        toPark
+                        //lift.LiftDown(),
+                        //toPark
                 )
         );
     }

@@ -40,8 +40,8 @@ public class LeftRedAuto extends LinearOpMode {
             private boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket packet){
-                HiTechl.setPosition(0.5193);
-                HiTechr.setPosition(0.4881);
+                HiTechl.setPosition(0.5145);
+                HiTechr.setPosition(0.4874);
                 //sleep(2000);
                 int delay = 2000; // number of milliseconds to sleep
                 long start = System.currentTimeMillis();
@@ -292,6 +292,18 @@ public class LeftRedAuto extends LinearOpMode {
         public Action FrontRotateTransfer(){
             return new FrontRotateTransfer();
         }
+        public class FrontGrab implements Action{
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                Misumil.setPosition(0.9645);
+                Misumir.setPosition(0.0355);
+                int delay = 2000;
+                long start = System.currentTimeMillis();
+                while(start >= System.currentTimeMillis() - delay);
+                return false;
+            }
+        }
+        public Action FrontGrab() { return new FrontGrab(); }
     }
     @Override
     public void runOpMode(){
@@ -309,23 +321,20 @@ public class LeftRedAuto extends LinearOpMode {
         Pose2d secondpose = new Pose2d(-36, -40, Math.toRadians(90));
         Pose2d thirdpose = new Pose2d(-55, -55, Math.toRadians(-135));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+        //MecanumDrive.setVelConstraint(drive.getVelocityConstraint(60, 60, 18));
         TrajectoryActionBuilder tab1 = drive.actionBuilder(secondpose);
         TrajectoryActionBuilder tab2 = drive.actionBuilder(thirdpose);
         TrajectoryActionBuilder tab3 = drive.actionBuilder(initialPose);
+        TrajectoryActionBuilder tab4 = drive.actionBuilder(thirdpose);
         Action leftToNet = tab1.fresh()
                 //.forward(12)
                 //.forward(15)
                 //.strafeTo(new Vector2d(12, -40))
-                .turn(Math.toRadians(90))
-                .strafeToConstantHeading(new Vector2d(-40,-40))
-                //new VelConstraint(20.0)
-                //.lineToX(-46)
-                .turn(Math.toRadians(-135))
-                .strafeToConstantHeading(new Vector2d(-55, -55))
+                .turn(Math.toRadians(-45))
+                .strafeTo(new Vector2d(-55, -55))
                 .build();
 
         Action toPark = tab2.fresh()
-                .strafeToConstantHeading(new Vector2d(-40, -40))
                 .turn(Math.toRadians(-54))
                 .strafeToConstantHeading(new Vector2d(45, -40))
                 .strafeToConstantHeading(new Vector2d(45, -52))
@@ -335,6 +344,10 @@ public class LeftRedAuto extends LinearOpMode {
                 .strafeToConstantHeading(new Vector2d(-36, -40))
                 //.lineToY(-40)
                 .build();
+        Action getsample = tab4.fresh()
+                .turn(Math.toRadians(-135))
+                .strafeTo(new Vector2d(-48.5, -39))
+                .build();
         waitForStart();
         //sleep(2000);
         int delay = 2000; // number of milliseconds to sleep
@@ -343,21 +356,22 @@ public class LeftRedAuto extends LinearOpMode {
         if (isStopRequested()) return;
         Actions.runBlocking(
                 new SequentialAction(
+                        BackClawGrab.RearClawClose(),
                         forward,
-                        FrontClawGrab.FrontClawClose(),
-                        BackClawGrab.RearClawOpen(),
-                        FrontClawGrab.FrontClawClose(),
-                        horizontalSlides.TransferHorizontal(),
-                        backRotate.BackRotateTransfer(),
-                        frontRotate.FrontRotateTransfer(),
+                        //FrontClawGrab.FrontClawClose(),
+                        //BackClawGrab.RearClawOpen(),
+                        //FrontClawGrab.FrontClawClose(),
+                        //horizontalSlides.TransferHorizontal(),
+                        //backRotate.BackRotateTransfer(),
+                        //frontRotate.FrontRotateTransfer(),
                         //.wait(2),
                         //TimeUnit.SECONDS.sleep(2.0),
                         BackClawGrab.RearClawClose(),
                         //TimeUnit.SECONDS.sleep(0.5),
-                        FrontClawGrab.FrontClawOpen(),
+                        //FrontClawGrab.FrontClawOpen(),
                         //TimeUnit.SECONDS.sleep(0.5),
                         backRotate.Vertical(),
-                        BackClawGrab.RearClawClose(),
+                        //BackClawGrab.RearClawClose(),
                         leftToNet,
                         lift.LiftUp(),
                         backRotate.ToDrop(),
@@ -367,7 +381,19 @@ public class LeftRedAuto extends LinearOpMode {
                         backRotate.Vertical(),
                         //TimeUnit.SECONDS.sleep(0.5),
                         lift.LiftDown(),
-                        toPark
+                        FrontClawGrab.FrontClawOpen(),
+                        getsample,
+                        frontRotate.FrontGrab(),
+                        FrontClawGrab.FrontClawClose(),
+                        BackClawGrab.RearClawOpen(),
+                        FrontClawGrab.FrontClawClose(),
+                        horizontalSlides.TransferHorizontal(),
+                        backRotate.BackRotateTransfer(),
+                        frontRotate.FrontRotateTransfer(),
+                        BackClawGrab.RearClawClose(),
+                        FrontClawGrab.FrontClawOpen(),
+                        backRotate.Vertical()
+                        //toPark
                 )
         );
     }
